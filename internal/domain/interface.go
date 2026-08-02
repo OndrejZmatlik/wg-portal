@@ -58,6 +58,8 @@ type Interface struct {
 	CreateDefaultPeer bool             // if true, default peers will be created for this interface
 	Backend           InterfaceBackend // the backend that is used to manage the interface (wgctrl, mikrotik, ...)
 	DriverType        string           // the interface driver type (linux, software, ...)
+	IsDynamic         bool             `gorm:"column:is_dynamic;default:false"` // specifies if the interface is a dynamic object
+
 	Disabled          *time.Time       `gorm:"index"` // flag that specifies if the interface is enabled (up) or not (down)
 	DisabledReason    string           // the reason why the interface has been disabled
 

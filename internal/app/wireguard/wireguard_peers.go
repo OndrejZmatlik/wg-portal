@@ -620,7 +620,11 @@ func (m Manager) getFreshPeerIpConfig(ctx context.Context, iface *domain.Interfa
 	return
 }
 
-func (m Manager) validatePeerModifications(ctx context.Context, _, _ *domain.Peer) error {
+func (m Manager) validatePeerModifications(ctx context.Context, old, _ *domain.Peer) error {
+	if old != nil && old.IsDynamic {
+		return fmt.Errorf("cannot modify dynamic peer: %w", domain.ErrInvalidData)
+	}
+
 	currentUser := domain.GetUserInfo(ctx)
 
 	if !currentUser.IsAdmin && !m.cfg.Core.SelfProvisioningAllowed {
@@ -649,7 +653,11 @@ func (m Manager) validatePeerCreation(ctx context.Context, _, new *domain.Peer) 
 	return nil
 }
 
-func (m Manager) validatePeerDeletion(ctx context.Context, _ *domain.Peer) error {
+func (m Manager) validatePeerDeletion(ctx context.Context, peer *domain.Peer) error {
+	if peer != nil && peer.IsDynamic {
+		return fmt.Errorf("cannot delete dynamic peer: %w", domain.ErrInvalidData)
+	}
+
 	currentUser := domain.GetUserInfo(ctx)
 
 	if !currentUser.IsAdmin && !m.cfg.Core.SelfProvisioningAllowed {

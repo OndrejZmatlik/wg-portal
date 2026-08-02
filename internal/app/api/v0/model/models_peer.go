@@ -49,6 +49,7 @@ type Peer struct {
 	DisabledReason      string     `json:"DisabledReason"`                       // the reason why the peer has been disabled
 	ExpiresAt           ExpiryDate `json:"ExpiresAt,omitempty"`                  // expiry dates for peers
 	Notes               string     `json:"Notes"`                                // a note field for peers
+	IsDynamic           bool       `json:"IsDynamic"`                            // specifies if the peer is dynamically created by mikrotik
 
 	Endpoint            ConfigOption[string]   `json:"Endpoint"`            // the endpoint address
 	EndpointPublicKey   ConfigOption[string]   `json:"EndpointPublicKey"`   // the endpoint public key
@@ -90,6 +91,7 @@ func NewPeer(src *domain.Peer) *Peer {
 		DisabledReason:      src.DisabledReason,
 		ExpiresAt:           ExpiryDate{src.ExpiresAt},
 		Notes:               src.Notes,
+		IsDynamic:           src.IsDynamic,
 		Endpoint:            ConfigOptionFromDomain(src.Endpoint),
 		EndpointPublicKey:   ConfigOptionFromDomain(src.EndpointPublicKey),
 		AllowedIPs:          StringSliceConfigOptionFromDomain(src.AllowedIPsStr),
@@ -148,6 +150,7 @@ func NewDomainPeer(src *Peer) *domain.Peer {
 		InterfaceIdentifier: domain.InterfaceIdentifier(src.InterfaceIdentifier),
 		Disabled:            nil, // set below
 		DisabledReason:      src.DisabledReason,
+		IsDynamic:           src.IsDynamic,
 		ExpiresAt:           src.ExpiresAt.Time,
 		Notes:               src.Notes,
 		Interface: domain.PeerInterfaceConfig{
