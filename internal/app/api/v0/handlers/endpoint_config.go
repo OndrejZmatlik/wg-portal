@@ -119,6 +119,7 @@ func (e ConfigEndpoint) handleSettingsGet() http.HandlerFunc {
 				names = append(names, model.SettingsBackendNames{
 					Id:   controller.Id,
 					Name: displayName,
+					Type: controller.Type,
 				})
 			}
 

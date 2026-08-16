@@ -791,12 +791,41 @@ func (c *MikrotikController) ExecuteInterfaceHook(
 		return nil
 	}
 
-	slog.Debug("executing Mikrotik script for interface hook", "interface", id, "script", hookCmd)
-	reply := c.client.ExecList(ctx, "/system/script/run", lowlevel.GenericJsonObject{
-		"number": hookCmd,
+	scriptName := fmt.Sprintf("wg-portal-hook-%s-%d", id, time.Now().UnixNano())
+	
+	// Replace %i with the interface ID to mimic wg-quick behavior
+	scriptSource := strings.ReplaceAll(hookCmd, "%i", string(id))
+	// Inject the interface ID as a local variable for convenience in RouterOS scripts
+	scriptSource = fmt.Sprintf(":local WGInterface \"%s\";\n%s", id, scriptSource)
+
+	slog.Debug("executing Mikrotik script for interface hook", "interface", id, "script", scriptSource)
+
+	createReply := c.client.Create(ctx, "/system/script", lowlevel.GenericJsonObject{
+		"name":   scriptName,
+		"source": scriptSource,
+		"policy": "ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon",
 	})
-	if reply.Status != lowlevel.MikrotikApiStatusOk {
-		return fmt.Errorf("failed to execute script %s: %v", hookCmd, reply.Error)
+	if createReply.Status != lowlevel.MikrotikApiStatusOk {
+		return fmt.Errorf("failed to create temporary script for hook: %v", createReply.Error)
+	}
+
+	scriptId := createReply.Data.GetString(".id")
+	if scriptId == "" {
+		scriptId = scriptName
+	}
+
+	defer func() {
+		cleanupReply := c.client.Delete(ctx, "/system/script/"+scriptId)
+		if cleanupReply.Status != lowlevel.MikrotikApiStatusOk {
+			slog.Warn("failed to remove temporary Mikrotik script", "scriptId", scriptId, "error", cleanupReply.Error)
+		}
+	}()
+
+	runReply := c.client.ExecList(ctx, "/system/script/run", lowlevel.GenericJsonObject{
+		"number": scriptId,
+	})
+	if runReply.Status != lowlevel.MikrotikApiStatusOk {
+		return fmt.Errorf("failed to execute hook script %s: %v", scriptName, runReply.Error)
 	}
 
 	return nil
