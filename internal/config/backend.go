@@ -61,6 +61,7 @@ func (b *Backend) Validate() error {
 type BackendBase struct {
 	Id          string `yaml:"id"`           // A unique id for the backend
 	DisplayName string `yaml:"display_name"` // A display name for the backend
+	Type        string `yaml:"-"`            // The type of the backend (e.g. local, mikrotik, pfsense)
 
 	IgnoredInterfaces []string `yaml:"ignored_interfaces"` // A list of interface names that should be ignored by this backend (e.g., "wg0")
 }

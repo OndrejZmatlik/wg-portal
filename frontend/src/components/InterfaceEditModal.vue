@@ -72,6 +72,14 @@ const isBackendValid = computed(() => {
   return valid
 })
 
+const isHookSupported = computed(() => {
+  if (!formData.value.Backend) return false;
+  let availableBackends = settings.Setting('AvailableBackends') || [];
+  let backend = availableBackends.find(b => b.Id === formData.value.Backend);
+  if (!backend) return false;
+  return backend.Type === 'local' || backend.Type === 'mikrotik';
+})
+
 // functions
 
 watch(() => props.visible, async (newValue, oldValue) => {
@@ -499,7 +507,7 @@ async function del() {
               </div>
             </div>
           </fieldset>
-          <fieldset v-if="formData.Backend==='local'">
+          <fieldset v-if="isHookSupported">
             <legend class="mt-4">{{ $t('modals.interface-edit.header-hooks') }}</legend>
             <div class="form-group">
               <label class="form-label mt-4">{{ $t('modals.interface-edit.pre-up.label') }}</label>

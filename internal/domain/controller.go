@@ -22,6 +22,7 @@ type MikrotikPeerExtras struct {
 	Comment         string
 	IsResponder     bool
 	Disabled        bool
+	Dynamic         bool
 	ClientEndpoint  string
 	ClientAddress   string
 	ClientDns       string

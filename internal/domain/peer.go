@@ -56,6 +56,8 @@ type Peer struct {
 
 	// Interface settings for the peer, used to generate the [interface] section in the peer config file
 	Interface PeerInterfaceConfig `gorm:"embedded"`
+
+	IsDynamic bool `gorm:"column:is_dynamic;default:false"` // specifies if the peer is a dynamic object (from Mikrotik)
 }
 
 func (p *Peer) IsDisabled() bool {
@@ -264,6 +266,7 @@ func ConvertPhysicalPeer(pp *PhysicalPeer) *Peer {
 		Interface: PeerInterfaceConfig{
 			KeyPair: pp.KeyPair,
 		},
+		IsDynamic: false,
 	}
 
 	if pp.GetExtras() == nil {
@@ -277,6 +280,7 @@ func ConvertPhysicalPeer(pp *PhysicalPeer) *Peer {
 		extras := pp.GetExtras().(MikrotikPeerExtras)
 		peer.Notes = extras.Comment
 		peer.DisplayName = extras.Name
+		peer.IsDynamic = extras.Dynamic
 		if extras.ClientEndpoint != "" { // if the client endpoint is set, we assume that this is a client peer
 			peer.Endpoint = NewConfigOption(extras.ClientEndpoint, true)
 			peer.Interface.Type = InterfaceTypeClient
@@ -369,6 +373,7 @@ func MergeToPhysicalPeer(pp *PhysicalPeer, p *Peer) {
 			ClientAddress:   CidrsToString(p.Interface.Addresses),
 			ClientDns:       p.Interface.DnsStr.GetValue(),
 			ClientKeepalive: p.PersistentKeepalive.GetValue(),
+			Dynamic:         p.IsDynamic,
 		}
 		pp.SetExtras(extras)
 	case ControllerTypeLocal:

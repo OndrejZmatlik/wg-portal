@@ -17,6 +17,7 @@ type Interface struct {
 	PublicKey         string `json:"PublicKey" example:"abcdef=="`  // public Key of the server interface
 	Disabled          bool   `json:"Disabled"`                      // flag that specifies if the interface is enabled (up) or not (down)
 	DisabledReason    string `json:"DisabledReason"`                // the reason why the interface has been disabled
+	IsDynamic         bool   `json:"IsDynamic"`                     // specifies if the interface is a dynamic object
 	SaveConfig        bool   `json:"SaveConfig"`                    // automatically persist config changes to the wgX.conf file
 	CreateDefaultPeer bool   `json:"CreateDefaultPeer"`             // if true, default peers will be created for this interface
 
@@ -65,6 +66,7 @@ func NewInterface(src *domain.Interface, peers []domain.Peer) *Interface {
 		PublicKey:                  src.PublicKey,
 		Disabled:                   src.IsDisabled(),
 		DisabledReason:             src.DisabledReason,
+		IsDynamic:                  src.IsDynamic,
 		SaveConfig:                 src.SaveConfig,
 		CreateDefaultPeer:          src.CreateDefaultPeer,
 		ListenPort:                 src.ListenPort,
@@ -153,6 +155,7 @@ func NewDomainInterface(src *Interface) *domain.Interface {
 		PreDown:                    src.PreDown,
 		PostDown:                   src.PostDown,
 		SaveConfig:                 src.SaveConfig,
+		IsDynamic:                  src.IsDynamic,
 		CreateDefaultPeer:          src.CreateDefaultPeer,
 		DisplayName:                src.DisplayName,
 		Type:                       domain.InterfaceType(src.Mode),
